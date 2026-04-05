@@ -24,6 +24,7 @@ func TestNewHandlerServesRootAssetsAndHealthz(t *testing.T) {
 		{name: "root", path: "/", wantCode: http.StatusOK, wantContain: "RewardLab"},
 		{name: "healthz", path: "/healthz", wantCode: http.StatusOK, wantContain: "ok"},
 		{name: "app js", path: "/assets/app.js", wantCode: http.StatusOK, wantContain: "runSimulation"},
+		{name: "favicon", path: "/favicon.ico", wantCode: http.StatusNoContent, wantContain: ""},
 	}
 
 	for _, tt := range requests {
@@ -38,7 +39,7 @@ func TestNewHandlerServesRootAssetsAndHealthz(t *testing.T) {
 				t.Fatalf("status code = %d, want %d", res.Code, tt.wantCode)
 			}
 
-			if !strings.Contains(res.Body.String(), tt.wantContain) {
+			if tt.wantContain != "" && !strings.Contains(res.Body.String(), tt.wantContain) {
 				t.Fatalf("body = %q, want substring %q", res.Body.String(), tt.wantContain)
 			}
 		})

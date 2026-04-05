@@ -13,8 +13,10 @@ var embeddedAssets embed.FS
 
 var indexHTML = mustReadFile("index.html")
 
+// RegisterRoutes wires the current RewardLab lesson page and static assets into the provided ServeMux.
 func RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/", serveIndex)
+	mux.HandleFunc("/favicon.ico", serveFavicon)
 	mux.Handle("/assets/", http.StripPrefix("/assets/", cacheStatic(http.FileServer(http.FS(assetFS())))))
 }
 
@@ -52,4 +54,14 @@ func cacheStatic(next http.Handler) http.Handler {
 		w.Header().Set("Cache-Control", "public, max-age=3600")
 		next.ServeHTTP(w, r)
 	})
+}
+
+func serveFavicon(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
