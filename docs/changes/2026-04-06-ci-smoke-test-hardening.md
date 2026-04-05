@@ -1,24 +1,24 @@
-# CI smoke test hardening
+# CI 스모크 테스트 강화
 
-## Status
+## 상태
 
-Snapshot
+스냅샷
 
-## Summary
+## 요약
 
-Replaced the brittle shell polling in the CI smoke test with a more reliable Python-based HTTP readiness check.
+CI 스모크 테스트에서 사용하던 취약한 셸 폴링을 더 신뢰할 수 있는 Python 기반 HTTP 준비 상태 검사로 교체했습니다.
 
-## What changed
+## 변경 내용
 
-* Kept the binary build and startup flow the same
-* Replaced curl-and-grep loop logic with Python polling using standard-library HTTP requests
-* Preserved the same assertions for `/healthz` and the lesson title at `/`
+* 바이너리 빌드와 시작 흐름은 그대로 유지했습니다.
+* curl과 grep 루프 로직을 표준 라이브러리 HTTP 요청을 사용하는 Python 폴링으로 교체했습니다.
+* `/healthz`와 `/`의 레슨 제목에 대한 기존 검증 조건은 그대로 유지했습니다.
 
-## Evidence
+## 근거
 
 * `.github/workflows/ci.yml`
-* local built-binary smoke test output
+* 로컬 빌드 바이너리 스모크 테스트 출력
 
-## Notes
+## 참고
 
-This change improves CI reliability only. It does not change RewardLab application behavior.
+이 변경은 CI 신뢰성만 개선합니다. RewardLab 애플리케이션 동작은 바꾸지 않습니다.
