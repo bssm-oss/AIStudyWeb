@@ -1,93 +1,93 @@
-# ADR 0001, RewardLab v1 architecture
+# ADR 0001, RewardLab v1 아키텍처
 
-## Status
+## 상태
 
-Accepted
+채택됨
 
-## Date
+## 날짜
 
 2026-04-06
 
-## Context
+## 배경
 
-RewardLab currently exists as a small local teaching application for a single lesson on epsilon-greedy multi-armed bandits. The repository needs a clear architectural baseline that explains how the current implementation is composed and what is intentionally out of scope.
+현재 RewardLab은 epsilon-greedy 다중 슬롯머신 밴딧 단일 레슨을 제공하는 작은 로컬 학습 애플리케이션입니다. 이 저장소에는 현재 구현이 어떤 구조로 이루어져 있는지, 그리고 무엇을 의도적으로 범위 밖에 두는지 설명하는 명확한 아키텍처 기준선이 필요합니다.
 
-The code today shows a narrow design:
+현재 코드가 보여주는 설계는 다음처럼 좁고 명확합니다.
 
-* a Go CLI starts the app
-* a local HTTP server serves the web lesson and `/healthz`
-* static assets are embedded into the Go binary
-* the simulation itself runs entirely in browser JavaScript
+* Go CLI가 앱을 시작한다.
+* 로컬 HTTP 서버가 웹 레슨과 `/healthz`를 제공한다.
+* 정적 에셋은 Go 바이너리에 내장된다.
+* 시뮬레이션은 전부 브라우저 JavaScript에서 실행된다.
 
-## Decision
+## 결정
 
-Use a local-first architecture with a thin Go host and a browser-side lesson runtime.
+얇은 Go 호스트와 브라우저 측 레슨 런타임으로 구성된 로컬 우선 아키텍처를 사용합니다.
 
-### Chosen structure
+### 선택한 구조
 
-* `cmd/rewardlab` is the executable entrypoint
-* `internal/cli` owns command parsing and startup coordination
-* `internal/server` owns HTTP serving, route registration, and graceful shutdown
-* `internal/browser` owns OS-specific browser opening
-* `web` owns embedded static assets and lesson behavior
+* `cmd/rewardlab`는 실행 파일 진입점입니다.
+* `internal/cli`는 명령 파싱과 시작 조정을 담당합니다.
+* `internal/server`는 HTTP 제공, 라우트 등록, 우아한 종료를 담당합니다.
+* `internal/browser`는 운영체제별 브라우저 열기를 담당합니다.
+* `web`는 내장 정적 에셋과 레슨 동작을 담당합니다.
 
-### HTTP surface
+### HTTP 표면
 
-The server exposes:
+서버는 다음 경로를 노출합니다.
 
-* `/` for the main lesson page
-* `/assets/*` for embedded static files
-* `/healthz` for basic health checking
+* `/` : 메인 레슨 페이지
+* `/assets/*` : 내장 정적 파일
+* `/healthz` : 기본 상태 확인
 
-### Simulation placement
+### 시뮬레이션 배치 위치
 
-The epsilon-greedy lesson logic lives in `web/app.js`.
+epsilon-greedy 레슨 로직은 `web/app.js`에 있습니다.
 
-This includes:
+여기에는 다음이 포함됩니다.
 
-* seeded pseudo-random generation
-* hidden true-mean generation per arm
-* reward sampling
-* epsilon-greedy action selection
-* incremental estimate updates
-* rendering of metrics, charts, and recent history
+* 시드 기반 의사난수 생성
+* arm별 숨겨진 true mean 생성
+* 보상 샘플링
+* epsilon-greedy 행동 선택
+* 점진적 추정값 업데이트
+* 지표, 차트, 최근 기록 렌더링
 
-## Why this decision fits the current repo
+## 이 결정이 현재 저장소에 맞는 이유
 
-This structure matches the implementation already present and keeps the code easy to understand.
+이 구조는 이미 존재하는 구현과 일치하며, 코드를 이해하기 쉽게 유지합니다.
 
-* The Go side stays small and testable.
-* The lesson can be served from a single binary because assets are embedded.
-* Browser execution keeps the teaching logic close to the UI.
-* The app works fully offline after startup.
+* Go 측은 작고 테스트 가능하게 유지됩니다.
+* 에셋이 내장되므로 하나의 바이너리만으로 레슨을 제공할 수 있습니다.
+* 브라우저 실행 방식은 학습 로직을 UI 가까이에 둡니다.
+* 앱은 시작 후 완전히 오프라인으로 동작합니다.
 
-## Consequences
+## 결과
 
-### Positive
+### 장점
 
-* Simple local developer workflow
-* No runtime dependency on external services
-* Small and direct test surface
-* Easy distribution as a single compiled CLI plus embedded assets
+* 단순한 로컬 개발 워크플로
+* 외부 서비스에 대한 런타임 의존 없음
+* 작고 직접적인 테스트 범위
+* 하나의 컴파일된 CLI와 내장 에셋으로 배포하기 쉬움
 
-### Trade-offs
+### 트레이드오프
 
-* Simulation logic is not reusable as a Go package today
-* There is no API boundary for external clients
-* There is no persistence or experiment history
-* Multi-user or remote-hosted use cases are not addressed
+* 현재 시뮬레이션 로직은 Go 패키지로 재사용되지 않습니다.
+* 외부 클라이언트를 위한 API 경계가 없습니다.
+* 영속 저장이나 실험 기록 기능이 없습니다.
+* 다중 사용자 또는 원격 호스팅 사용 사례는 다루지 않습니다.
 
-## Explicit non-goals for v1
+## v1의 명시적 비목표
 
-The current architecture does not attempt to provide:
+현재 아키텍처는 다음을 제공하려고 하지 않습니다.
 
-* multiple lessons
-* multiple bandit strategies
-* server-side simulation
-* saved experiments
-* authentication or accounts
-* cloud deployment workflow
+* 여러 개의 레슨
+* 여러 개의 밴딧 전략
+* 서버 측 시뮬레이션
+* 저장된 실험 기록
+* 인증 또는 계정
+* 클라우드 배포 워크플로
 
-## Follow-up expectations
+## 후속 기대 사항
 
-If the project later adds server-side simulation, persistent state, or more lessons, create a new ADR or superseding ADR instead of quietly stretching this one.
+나중에 프로젝트가 서버 측 시뮬레이션, 영속 상태, 더 많은 레슨을 추가하게 된다면, 이 문서를 조용히 늘리지 말고 새 ADR 또는 이를 대체하는 ADR을 작성하세요.

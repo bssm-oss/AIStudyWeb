@@ -1,110 +1,110 @@
-# RewardLab agent guide
+# RewardLab 에이전트 가이드
 
-This repository uses the product identity RewardLab. The Go module path is `github.com/bssm-oss/AIStudyWeb`.
+이 저장소는 RewardLab이라는 제품 이름을 사용합니다. Go 모듈 경로는 `github.com/bssm-oss/AIStudyWeb` 입니다.
 
-This file tells future AI agents how to work in this repo without drifting away from the current implementation.
+이 문서는 미래의 AI 에이전트가 현재 구현 범위를 벗어나지 않고 이 저장소에서 작업할 수 있도록 안내합니다.
 
-## Source of truth
+## 기준 진실 원천
 
-Document and change only what exists in code.
+문서화와 변경은 코드에 실제로 존재하는 것만 기준으로 해야 합니다.
 
-* Do not invent APIs, lessons, strategies, storage layers, or deployment stories.
-* Do not describe planned features as if they already ship.
-* If code and docs disagree, update docs to match code unless the task explicitly asks for implementation work too.
+* 존재하지 않는 API, 레슨, 전략, 저장 계층, 배포 방식을 지어내지 마세요.
+* 계획된 기능을 이미 제공하는 것처럼 서술하지 마세요.
+* 코드와 문서가 다르면, 사용자가 구현 작업도 함께 요청한 경우가 아니라면 문서를 코드에 맞추세요.
 
-## Current product scope
+## 현재 제품 범위
 
-RewardLab currently contains:
+현재 RewardLab에는 다음이 포함됩니다.
 
-* one Go CLI command, `rewardlab serve`
-* one local HTTP server
-* one embedded web UI
-* one lesson, epsilon-greedy multi-armed bandits
+* 하나의 Go CLI 명령, `rewardlab serve`
+* 하나의 로컬 HTTP 서버
+* 하나의 내장 웹 UI
+* 하나의 레슨, epsilon-greedy 다중 슬롯머신 밴딧
 
-It does not currently contain:
+현재 RewardLab에는 다음이 포함되지 않습니다.
 
-* a JSON API
-* persisted state
-* user accounts
-* multiple lessons
-* multiple bandit strategies
-* release automation
+* JSON API
+* 영속 상태 저장
+* 사용자 계정
+* 여러 개의 레슨
+* 여러 개의 밴딧 전략
+* 릴리스 자동화
 
-## Architecture summary
+## 아키텍처 요약
 
-* `cmd/rewardlab/main.go` starts the CLI with signal-aware shutdown.
-* `internal/cli` parses command flags and coordinates startup.
-* `internal/server` serves `/`, `/assets/*`, and `/healthz`.
-* `internal/browser` opens the local URL in the default browser.
-* `web/` contains the embedded UI and browser-side simulation logic.
+* `cmd/rewardlab/main.go`는 시그널 대응 종료 처리를 포함해 CLI를 시작합니다.
+* `internal/cli`는 명령 플래그를 파싱하고 시작 흐름을 조정합니다.
+* `internal/server`는 `/`, `/assets/*`, `/healthz`를 제공합니다.
+* `internal/browser`는 기본 브라우저로 로컬 URL을 엽니다.
+* `web/`는 내장 UI와 브라우저 측 시뮬레이션 로직을 담고 있습니다.
 
-The simulation happens in `web/app.js`. The Go server does not compute bandit results.
+시뮬레이션은 `web/app.js`에서 수행됩니다. Go 서버는 밴딧 결과를 계산하지 않습니다.
 
-## Repository rules
+## 저장소 규칙
 
-When working here, follow these rules.
+이 저장소에서 작업할 때는 다음 규칙을 따르세요.
 
-* Keep the current product name, RewardLab, in user-facing docs unless a task explicitly renames it.
-* Preserve the module path `github.com/bssm-oss/AIStudyWeb` unless the code itself is being migrated.
-* Treat the current single-lesson epsilon-greedy scope as the active boundary.
-* Prefer small, explicit changes over broad speculative refactors.
-* Do not add CI files, release automation, or deployment docs unless asked.
-* Do not commit or push unless the user explicitly asks.
-* Do not change behavior just to make docs easier. If a tiny code comment helps accuracy, keep it minimal.
+* 사용자가 명시적으로 이름 변경을 요청하지 않는 한, 사용자 대상 문서에서는 현재 제품 이름 RewardLab을 유지하세요.
+* 코드 자체를 마이그레이션하는 작업이 아니라면 모듈 경로 `github.com/bssm-oss/AIStudyWeb`를 유지하세요.
+* 현재 단일 레슨 epsilon-greedy 범위를 활성 경계로 취급하세요.
+* 추측성 대규모 리팩터링보다 작고 명시적인 변경을 우선하세요.
+* 요청받지 않았다면 CI 파일, 릴리스 자동화, 배포 문서를 추가하지 마세요.
+* 사용자가 명시적으로 요청하지 않았다면 커밋하거나 푸시하지 마세요.
+* 문서를 쉽게 쓰기 위해 동작을 바꾸지 마세요. 정확성을 위해 아주 작은 코드 주석이 필요하다면 최소한으로 유지하세요.
 
-## Documentation expectations
+## 문서 유지 기대 사항
 
-Every meaningful change should keep these files accurate.
+의미 있는 변경이 있을 때마다 다음 파일들은 정확한 상태를 유지해야 합니다.
 
-* `README.md` for human onboarding
-* `AGENTS.md` for future AI contributors
-* `docs/adr/` for architectural choices
-* `docs/changes/` for change records
+* `README.md` : 사람을 위한 온보딩 문서
+* `AGENTS.md` : 미래 AI 기여자를 위한 규칙 문서
+* `docs/adr/` : 아키텍처 결정 문서
+* `docs/changes/` : 변경 기록 문서
 
-## Change record convention
+## 변경 기록 규칙
 
-Add a new markdown file in `docs/changes/` for each meaningful change set.
+의미 있는 변경 세트마다 `docs/changes/` 아래에 새 markdown 파일을 추가하세요.
 
-Suggested filename pattern:
+권장 파일명 패턴은 다음과 같습니다.
 
 ```text
 YYYY-MM-DD-short-topic.md
 ```
 
-Suggested structure:
+권장 구조는 다음과 같습니다.
 
 ```md
-# Title
+# 제목
 
-## Status
-Snapshot
+## 상태
+스냅샷
 
-## Summary
-Short human-readable description.
+## 요약
+짧고 사람이 읽기 쉬운 설명.
 
-## What changed
-* Item
-* Item
+## 변경 내용
+* 항목
+* 항목
 
-## Evidence
-* File paths
-* Commands run
+## 근거
+* 파일 경로
+* 실행한 명령
 
-## Notes
-Any limits, follow-ups, or scope boundaries.
+## 참고
+제한 사항, 후속 작업, 또는 범위 경계.
 ```
 
-Use plain factual language. If a record is written after the fact, say that it captures the current state as a snapshot.
+문장은 사실 중심으로 쓰세요. 사후에 기록한 문서라면 현재 저장소 상태를 담은 스냅샷이라고 명시하세요.
 
-## Verification expectations
+## 검증 기대 사항
 
-Before finishing a task that edits code or docs:
+코드나 문서를 수정하는 작업을 마치기 전에는 다음을 수행해야 합니다.
 
-* run relevant tests
-* run a build when the project can be built
-* confirm docs match real commands, routes, and filenames
+* 관련 테스트 실행
+* 빌드 가능한 프로젝트라면 빌드 실행
+* 문서가 실제 명령, 라우트, 파일명과 일치하는지 확인
 
-For this repository today, the baseline checks are:
+현재 이 저장소의 기본 검증 명령은 다음과 같습니다.
 
 ```bash
 go test ./...
@@ -112,11 +112,11 @@ go build ./cmd/rewardlab
 node --test web/app.test.js
 ```
 
-## Writing style
+## 글쓰기 스타일
 
-Prefer clear, product-grade prose.
+명확하고 제품 수준의 문장을 우선하세요.
 
-* Write for humans first
-* Keep statements concrete and verifiable
-* Use current-state wording such as “currently” or “today” when scope is narrow
-* Avoid filler and speculation
+* 사람을 위한 문장으로 작성하세요.
+* 표현은 구체적이고 검증 가능해야 합니다.
+* 범위가 좁을 때는 “현재”, “오늘” 같은 현재 시점 표현을 사용하세요.
+* 군더더기와 추측을 피하세요.
