@@ -75,6 +75,7 @@ Run the full test suite:
 
 ```bash
 go test ./...
+node --test web/app.test.js
 ```
 
 This repository currently has tests in:
