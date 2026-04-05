@@ -7,19 +7,23 @@ import (
 	"runtime"
 )
 
+// Opener opens the local RewardLab URL in a user-visible browser.
 type Opener interface {
 	Open(ctx context.Context, url string) error
 }
 
+// Runner abstracts process startup so browser opening can be tested without launching real commands.
 type Runner interface {
 	Start(ctx context.Context, name string, args ...string) error
 }
 
+// OSOpener selects the platform-specific browser command for the current operating system.
 type OSOpener struct {
 	GOOS   string
 	Runner Runner
 }
 
+// NewDefault returns the default opener backed by the current runtime OS and exec-based process startup.
 func NewDefault() OSOpener {
 	return OSOpener{
 		GOOS:   runtime.GOOS,
@@ -27,6 +31,7 @@ func NewDefault() OSOpener {
 	}
 }
 
+// Open starts the platform-specific browser command for the provided local URL.
 func (o OSOpener) Open(ctx context.Context, url string) error {
 	name, args, err := commandFor(o.GOOS, url)
 	if err != nil {

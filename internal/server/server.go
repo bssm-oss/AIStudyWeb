@@ -14,11 +14,13 @@ import (
 
 const shutdownTimeout = 5 * time.Second
 
+// Config defines how the local RewardLab HTTP server binds on startup.
 type Config struct {
 	Host string
 	Port int
 }
 
+// App manages the lifecycle of the local RewardLab HTTP server.
 type App struct {
 	config   Config
 	http     *http.Server
@@ -26,6 +28,7 @@ type App struct {
 	errCh    chan error
 }
 
+// New validates the server configuration and constructs a new local app instance.
 func New(cfg Config) (*App, error) {
 	if cfg.Host == "" {
 		cfg.Host = "127.0.0.1"
@@ -45,6 +48,7 @@ func New(cfg Config) (*App, error) {
 	}, nil
 }
 
+// NewHandler returns the root HTTP handler for the current RewardLab routes.
 func NewHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", healthz)
@@ -52,6 +56,7 @@ func NewHandler() http.Handler {
 	return mux
 }
 
+// Start begins serving HTTP and returns the reachable local URL for the running app.
 func (a *App) Start(ctx context.Context) (string, error) {
 	if a.listener != nil {
 		return "", errors.New("server already started")
@@ -82,6 +87,7 @@ func (a *App) Start(ctx context.Context) (string, error) {
 	return a.URL(), nil
 }
 
+// Wait blocks until the server exits or returns a serving error.
 func (a *App) Wait() error {
 	if a.errCh == nil {
 		return errors.New("server not started")
@@ -95,6 +101,7 @@ func (a *App) Wait() error {
 	return err
 }
 
+// Shutdown gracefully stops the HTTP server if it has been started.
 func (a *App) Shutdown(ctx context.Context) error {
 	if a.listener == nil {
 		return nil
@@ -103,6 +110,7 @@ func (a *App) Shutdown(ctx context.Context) error {
 	return a.http.Shutdown(ctx)
 }
 
+// URL returns the normalized local browser URL for the running app.
 func (a *App) URL() string {
 	if a.listener == nil {
 		return ""
