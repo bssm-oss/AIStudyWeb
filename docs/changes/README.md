@@ -1,44 +1,44 @@
-# Change records
+# 변경 기록
 
-This directory stores human-readable change records for RewardLab.
+이 디렉터리는 RewardLab의 사람이 읽을 수 있는 변경 기록을 저장합니다.
 
-## Purpose
+## 목적
 
-Use these files to capture meaningful work in a way that helps future maintainers and AI agents understand how the repository evolved.
+이 파일들은 미래의 유지보수자와 AI 에이전트가 저장소가 어떻게 발전했는지 이해할 수 있도록 의미 있는 작업을 기록하는 데 사용합니다.
 
-## Convention
+## 규칙
 
-Create one markdown file per change set.
+변경 세트마다 하나의 markdown 파일을 작성하세요.
 
-Filename pattern:
+파일명 패턴은 다음과 같습니다.
 
 ```text
 YYYY-MM-DD-short-topic.md
 ```
 
-Recommended sections:
+권장 섹션은 다음과 같습니다.
 
 ```md
-# Title
+# 제목
 
-## Status
-Snapshot
+## 상태
+스냅샷
 
-## Summary
-Short explanation of the change.
+## 요약
+변경에 대한 짧은 설명.
 
-## What changed
-* Item
-* Item
+## 변경 내용
+* 항목
+* 항목
 
-## Evidence
-* Files touched
-* Commands run
+## 근거
+* 수정된 파일
+* 실행한 명령
 
-## Notes
-Limits, constraints, or follow-up context.
+## 참고
+제한 사항, 제약, 또는 후속 맥락.
 ```
 
-## Important rule
+## 중요한 규칙
 
-Write facts, not fiction. If a record is created after the implementation already exists, say that it captures the current repository state as a snapshot.
+사실만 쓰고 지어내지 마세요. 구현이 이미 존재한 뒤에 기록하는 문서라면, 현재 저장소 상태를 담은 스냅샷이라고 명시하세요.
