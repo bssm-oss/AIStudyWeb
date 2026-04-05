@@ -109,6 +109,7 @@ For this repository today, the baseline checks are:
 ```bash
 go test ./...
 go build ./cmd/rewardlab
+node --test web/app.test.js
 ```
 
 ## Writing style

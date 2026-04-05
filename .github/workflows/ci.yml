@@ -19,6 +19,11 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Verify formatting
         run: |
           unformatted="$(gofmt -l .)"
@@ -32,6 +37,9 @@ jobs:
 
       - name: Run tests
         run: go test ./...
+
+      - name: Run browser lesson tests
+        run: node --test web/app.test.js
 
       - name: Build rewardlab binary
         run: |
