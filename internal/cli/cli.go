@@ -12,12 +12,14 @@ import (
 	"github.com/bssm-oss/AIStudyWeb/internal/server"
 )
 
+// Server describes the runtime behavior needed by the CLI to start, observe, and stop the local app.
 type Server interface {
 	Start(ctx context.Context) (string, error)
 	Wait() error
 	Shutdown(ctx context.Context) error
 }
 
+// Dependencies holds the concrete integrations the CLI uses for output, browser startup, and server creation.
 type Dependencies struct {
 	Stdout    io.Writer
 	Stderr    io.Writer
@@ -25,6 +27,7 @@ type Dependencies struct {
 	NewServer func(cfg server.Config) (Server, error)
 }
 
+// DefaultDependencies returns the production dependency set used by the RewardLab CLI.
 func DefaultDependencies() Dependencies {
 	return Dependencies{
 		Stdout: os.Stdout,
@@ -36,6 +39,7 @@ func DefaultDependencies() Dependencies {
 	}
 }
 
+// Run executes the RewardLab CLI with the provided arguments and integrations.
 func Run(ctx context.Context, args []string, deps Dependencies) error {
 	deps = withDefaults(deps)
 
