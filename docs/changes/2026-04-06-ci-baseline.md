@@ -1,25 +1,25 @@
-# CI baseline
+# CI 기준선
 
-## Status
+## 상태
 
-Snapshot
+스냅샷
 
-## Summary
+## 요약
 
-Added the first continuous integration workflow for RewardLab and aligned repository metadata with that new automation.
+RewardLab의 첫 지속적 통합 워크플로를 추가하고, 저장소 메타데이터를 이 자동화 상태에 맞게 정렬했습니다.
 
-## What changed
+## 변경 내용
 
-* Added `.github/workflows/ci.yml` for formatting, vet, test, build, and smoke-check validation
-* Added `.gitignore` for IDE files, local smoke-test output, and built binaries
-* Updated `AGENTS.md` so its current-state scope matches the presence of CI
+* 포맷, vet, 테스트, 빌드, 스모크 체크를 검증하는 `.github/workflows/ci.yml`을 추가했습니다.
+* IDE 파일, 로컬 스모크 테스트 출력물, 빌드 바이너리를 무시하는 `.gitignore`를 추가했습니다.
+* `AGENTS.md`를 수정해 현재 저장소 상태에 CI가 존재함을 반영했습니다.
 
-## Evidence
+## 근거
 
 * `.github/workflows/ci.yml`
 * `.gitignore`
 * `AGENTS.md`
 
-## Notes
+## 참고
 
-This workflow validates the current local-first application only. It does not add release, deployment, or publishing automation.
+이 워크플로는 현재의 로컬 우선 애플리케이션만 검증합니다. 릴리스, 배포, 퍼블리싱 자동화는 추가하지 않습니다.

@@ -1,25 +1,25 @@
-# Publish readiness fixes
+# 공개 준비 보강
 
-## Status
+## 상태
 
-Snapshot
+스냅샷
 
-## Summary
+## 요약
 
-Applied the final repository-hygiene fixes needed before publishing RewardLab as an open-source project.
+RewardLab을 오픈소스 프로젝트로 공개하기 전에 필요한 마지막 저장소 위생 보강을 적용했습니다.
 
-## What changed
+## 변경 내용
 
-* Updated `.gitignore` to exclude `.sisyphus/` local agent state
-* Added a top-level `LICENSE` file using the MIT license
-* Updated `README.md` to point to the repository license explicitly
+* `.sisyphus/` 로컬 에이전트 상태를 제외하도록 `.gitignore`를 업데이트했습니다.
+* MIT 라이선스를 사용하는 최상위 `LICENSE` 파일을 추가했습니다.
+* 저장소 라이선스를 명시적으로 가리키도록 `README.md`를 업데이트했습니다.
 
-## Evidence
+## 근거
 
 * `.gitignore`
 * `LICENSE`
 * `README.md`
 
-## Notes
+## 참고
 
-These fixes address publish-readiness only. They do not change the application runtime or scope.
+이 보강은 공개 준비 상태만 다룹니다. 애플리케이션 런타임이나 범위는 바꾸지 않습니다.
