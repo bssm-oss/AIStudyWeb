@@ -1,176 +1,176 @@
 # RewardLab
 
-RewardLab is the current product identity for the Go module `github.com/bssm-oss/AIStudyWeb`.
+RewardLab은 Go 모듈 `github.com/bssm-oss/AIStudyWeb`의 현재 제품 이름입니다.
 
-Today this repository ships one local learning experience: a single lesson on epsilon-greedy multi-armed bandits. The app runs as a Go CLI that starts a local HTTP server and serves embedded web assets. The lesson itself runs in the browser with plain JavaScript. There is no database, no remote API, and no server-side simulation endpoint in the current implementation.
+현재 이 저장소는 하나의 로컬 학습 경험만 제공합니다. 구체적으로는 epsilon-greedy 다중 슬롯머신 밴딧을 다루는 단일 레슨입니다. 애플리케이션은 로컬 HTTP 서버를 띄우는 Go CLI로 동작하며, 내장된 웹 에셋을 제공합니다. 레슨 자체는 순수 JavaScript로 브라우저에서 실행됩니다. 현재 구현에는 데이터베이스, 원격 API, 서버 측 시뮬레이션 엔드포인트가 없습니다.
 
-## What exists today
+## 현재 포함된 것
 
-* One CLI entrypoint: `rewardlab serve`
-* One local web server with a health endpoint at `/healthz`
-* One embedded lesson UI at `/`
-* One simulation model, epsilon-greedy bandits, computed entirely in the browser
-* Go unit and integration tests for the CLI, browser opener, server, and served UI
+* 하나의 CLI 진입점: `rewardlab serve`
+* `/healthz` 상태 확인 엔드포인트를 포함한 로컬 웹 서버 하나
+* `/` 경로에서 제공되는 내장 레슨 UI 하나
+* 브라우저에서 전부 계산되는 epsilon-greedy 밴딧 시뮬레이션 하나
+* CLI, 브라우저 오프너, 서버, 제공되는 UI를 검증하는 Go 단위/통합 테스트
 
-## Current scope
+## 현재 범위
 
-RewardLab is intentionally narrow right now.
+RewardLab은 의도적으로 범위를 좁게 유지하고 있습니다.
 
-* Product scope: local-first teaching app
-* Lesson scope: lesson 01 only
-* Algorithm scope: epsilon-greedy only
-* Delivery scope: embedded static web assets served by Go
-* Persistence scope: none
-* Network scope: local server only
+* 제품 범위: 로컬 우선 학습 애플리케이션
+* 레슨 범위: lesson 01 하나만 제공
+* 알고리즘 범위: epsilon-greedy만 제공
+* 전달 범위: Go가 제공하는 내장 정적 웹 에셋
+* 영속성 범위: 없음
+* 네트워크 범위: 로컬 서버만 사용
 
-If a planned change is not visible in the current codebase, it should be treated as future work, not current behavior.
+계획된 변경이라도 현재 코드베이스에 보이지 않는다면, 현재 동작이 아니라 미래 작업으로 취급해야 합니다.
 
-## Requirements
+## 요구 사항
 
-The module currently declares:
+현재 모듈 선언은 다음과 같습니다.
 
 ```text
 module github.com/bssm-oss/AIStudyWeb
 go 1.26.1
 ```
 
-Use a Go toolchain compatible with `go.mod`.
+`go.mod`와 호환되는 Go 툴체인을 사용하세요.
 
-## Install and run
+## 설치 및 실행
 
-Run the app directly from source:
+소스에서 바로 앱을 실행하려면 다음 명령을 사용합니다.
 
 ```bash
 go run ./cmd/rewardlab serve
 ```
 
-Useful flags:
+유용한 플래그는 다음과 같습니다.
 
-* `--host`, default `127.0.0.1`
-* `--port`, default `8080`
-* `--open`, default `true`
+* `--host`, 기본값 `127.0.0.1`
+* `--port`, 기본값 `8080`
+* `--open`, 기본값 `true`
 
-Examples:
+예시는 다음과 같습니다.
 
 ```bash
 go run ./cmd/rewardlab serve --open=false
 go run ./cmd/rewardlab serve --host=127.0.0.1 --port=9090 --open=false
 ```
 
-Build the CLI:
+CLI 바이너리를 빌드하려면 다음 명령을 사용합니다.
 
 ```bash
 go build ./cmd/rewardlab
 ```
 
-When started successfully, the CLI prints a line like:
+정상적으로 시작되면 CLI는 아래와 비슷한 메시지를 출력합니다.
 
 ```text
 RewardLab listening on http://127.0.0.1:8080
 ```
 
-## Test commands
+## 테스트 명령
 
-Run the full test suite:
+전체 테스트 스위트를 실행하려면 다음 명령을 사용합니다.
 
 ```bash
 go test ./...
 node --test web/app.test.js
 ```
 
-This repository currently has tests in:
+현재 이 저장소의 테스트는 다음 위치에 있습니다.
 
 * `internal/browser`
 * `internal/cli`
 * `internal/server`
 * `test`
 
-## How the app works
+## 앱 동작 방식
 
-The runtime flow is simple.
+런타임 흐름은 단순합니다.
 
-1. `cmd/rewardlab/main.go` creates a signal-aware context.
-2. `internal/cli` parses the `serve` command and flags.
-3. `internal/server` starts an HTTP server and exposes `/healthz` plus the web UI routes.
-4. `web/assets.go` serves embedded `index.html`, `styles.css`, and `app.js`.
-5. `web/app.js` runs the epsilon-greedy simulation in the browser and renders the lesson.
+1. `cmd/rewardlab/main.go`가 시그널 대응 컨텍스트를 생성합니다.
+2. `internal/cli`가 `serve` 명령과 플래그를 파싱합니다.
+3. `internal/server`가 HTTP 서버를 시작하고 `/healthz` 및 웹 UI 라우트를 노출합니다.
+4. `web/assets.go`가 `index.html`, `styles.css`, `app.js`를 내장 자산으로 제공합니다.
+5. `web/app.js`가 브라우저에서 epsilon-greedy 시뮬레이션을 수행하고 레슨 UI를 렌더링합니다.
 
-The browser experience is seeded and deterministic for the same control values because the lesson uses a seeded pseudo-random generator in `web/app.js`.
+브라우저 경험은 `web/app.js`의 시드 기반 의사난수 생성기를 사용하므로 동일한 입력값에 대해 결정론적으로 동작합니다.
 
-## Architecture at a glance
+## 아키텍처 한눈에 보기
 
-### CLI layer
+### CLI 계층
 
-`internal/cli` owns command parsing and startup orchestration. It depends on abstractions for browser opening and server creation so tests can stub those pieces.
+`internal/cli`는 명령 파싱과 시작 오케스트레이션을 담당합니다. 테스트에서 브라우저 실행과 서버 생성을 대체할 수 있도록 추상화에 의존합니다.
 
-### Browser opener
+### 브라우저 오프너
 
-`internal/browser` maps the current operating system to the expected open command.
+`internal/browser`는 현재 운영체제에 맞는 기본 브라우저 실행 명령을 선택합니다.
 
 * macOS: `open`
 * Linux: `xdg-open`
 * Windows: `rundll32 url.dll,FileProtocolHandler`
 
-### HTTP server
+### HTTP 서버
 
-`internal/server` owns server construction, startup, shutdown, health checking, and route registration. The server returns a normalized local URL, even when listening on port `0` or wildcard hosts.
+`internal/server`는 서버 생성, 시작, 종료, 상태 확인, 라우트 등록을 담당합니다. 포트 `0` 또는 와일드카드 호스트로 리슨하더라도 브라우저에서 접근 가능한 정규화된 로컬 URL을 반환합니다.
 
-### Web assets
+### 웹 에셋
 
-The `web` package embeds and serves three files.
+`web` 패키지는 세 개의 파일을 내장하고 제공합니다.
 
-* `index.html` defines the lesson layout
-* `styles.css` provides the visual system
-* `app.js` handles controls, simulation, summaries, charts, and recent pull history
+* `index.html`은 레슨 레이아웃을 정의합니다.
+* `styles.css`는 시각 스타일 시스템을 제공합니다.
+* `app.js`는 제어 입력, 시뮬레이션, 요약 카드, 차트, 최근 선택 기록을 처리합니다.
 
-### Simulation model
+### 시뮬레이션 모델
 
-The current lesson simulates a k-armed bandit in JavaScript.
+현재 레슨은 JavaScript로 k-armed bandit을 시뮬레이션합니다.
 
-* Each arm gets a hidden true mean from a normal distribution
-* Rewards are sampled as true mean plus normal noise
-* The policy explores with probability `epsilon`
-* Otherwise it exploits the arm with the highest estimated value
-* Estimates are updated with an incremental sample mean
+* 각 arm은 정규분포에서 샘플링한 숨겨진 true mean을 가집니다.
+* 보상은 true mean에 정규 잡음을 더해 샘플링합니다.
+* 정책은 `epsilon` 확률로 탐색합니다.
+* 그 외에는 현재 추정값이 가장 높은 arm을 활용합니다.
+* 추정값은 점진적 표본 평균으로 갱신합니다.
 
-The UI shows summary metrics, arm-by-arm true versus estimated values, interpretation cards, and the latest ten pulls.
+UI는 요약 지표, arm별 true 값과 추정값 비교, 해석 카드, 최근 10회 선택 내역을 보여줍니다.
 
-## Repository layout
+## 저장소 구조
 
 ```text
-cmd/rewardlab/         CLI entrypoint
-internal/browser/      OS-specific browser opening
-internal/cli/          command parsing and app startup
-internal/server/       HTTP server and routing
-test/                  black-box integration tests
-web/                   embedded static lesson assets
-docs/adr/              architecture decisions
-docs/changes/          change records
-AGENTS.md              repo rules for AI contributors
+cmd/rewardlab/         CLI 진입점
+internal/browser/      운영체제별 브라우저 열기
+internal/cli/          명령 파싱과 앱 시작 처리
+internal/server/       HTTP 서버와 라우팅
+test/                  블랙박스 통합 테스트
+web/                   내장 정적 레슨 에셋
+docs/adr/              아키텍처 결정 문서
+docs/changes/          변경 기록
+AGENTS.md              AI 기여자를 위한 저장소 규칙
 ```
 
-## Constraints
+## 제약 사항
 
-The current codebase has a few important boundaries.
+현재 코드베이스에는 몇 가지 중요한 경계가 있습니다.
 
-* The app is local-first. It does not talk to external services.
-* The lesson runs in browser JavaScript, not on the Go server.
-* The server serves content and health only. It does not expose a simulation API.
-* There is one lesson and one strategy today.
-* Documentation should describe current behavior, not planned features.
+* 앱은 로컬 우선입니다. 외부 서비스와 통신하지 않습니다.
+* 레슨은 Go 서버가 아니라 브라우저 JavaScript에서 실행됩니다.
+* 서버는 콘텐츠와 상태 확인만 제공합니다. 시뮬레이션 API는 노출하지 않습니다.
+* 현재 레슨은 하나이고 전략도 하나뿐입니다.
+* 문서는 계획된 기능이 아니라 현재 동작을 설명해야 합니다.
 
-## Workflow expectations
+## 워크플로 기대 사항
 
-For future work, keep the repository disciplined.
+향후 작업에서도 저장소 운영을 엄격하게 유지해야 합니다.
 
-* Match the existing module path and product name: `github.com/bssm-oss/AIStudyWeb` and RewardLab
-* Keep docs aligned with real code after every meaningful change
-* Record notable changes as new markdown files in `docs/changes/`
-* Update the ADR set when architecture decisions change
-* Do not invent undocumented features in README or agent guidance
+* 모듈 경로와 제품 이름은 현재 값인 `github.com/bssm-oss/AIStudyWeb` 와 RewardLab을 유지합니다.
+* 의미 있는 변경 이후에는 문서가 실제 코드와 계속 일치해야 합니다.
+* 중요한 변경은 `docs/changes/` 아래에 새 Markdown 파일로 기록합니다.
+* 아키텍처 결정이 바뀌면 ADR 집합도 함께 갱신합니다.
+* README나 에이전트 가이드에 문서화되지 않은 기능을 지어내지 않습니다.
 
-See `AGENTS.md` for the repository rules intended for future AI and automation.
+AI 및 자동화를 위한 저장소 규칙은 `AGENTS.md`를 참고하세요.
 
-## License
+## 라이선스
 
-RewardLab is available under the MIT License. See `LICENSE`.
+RewardLab은 MIT License로 배포됩니다. 자세한 내용은 `LICENSE`를 참고하세요.
