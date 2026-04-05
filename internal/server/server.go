@@ -1,0 +1,134 @@
+package server
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"strconv"
+	"time"
+
+	webui "github.com/bssm-oss/AIStudyWeb/web"
+)
+
+const shutdownTimeout = 5 * time.Second
+
+type Config struct {
+	Host string
+	Port int
+}
+
+type App struct {
+	config   Config
+	http     *http.Server
+	listener net.Listener
+	errCh    chan error
+}
+
+func New(cfg Config) (*App, error) {
+	if cfg.Host == "" {
+		cfg.Host = "127.0.0.1"
+	}
+
+	if cfg.Port < 0 || cfg.Port > 65535 {
+		return nil, fmt.Errorf("port must be between 0 and 65535: %d", cfg.Port)
+	}
+
+	return &App{
+		config: cfg,
+		http: &http.Server{
+			Addr:              net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)),
+			Handler:           NewHandler(),
+			ReadHeaderTimeout: shutdownTimeout,
+		},
+	}, nil
+}
+
+func NewHandler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", healthz)
+	webui.RegisterRoutes(mux)
+	return mux
+}
+
+func (a *App) Start(ctx context.Context) (string, error) {
+	if a.listener != nil {
+		return "", errors.New("server already started")
+	}
+
+	ln, err := net.Listen("tcp", a.http.Addr)
+	if err != nil {
+		return "", fmt.Errorf("listen: %w", err)
+	}
+
+	a.listener = ln
+	a.errCh = make(chan error, 1)
+
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		_ = a.Shutdown(shutdownCtx)
+	}()
+
+	go func() {
+		defer close(a.errCh)
+		if err := a.http.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			a.errCh <- err
+		}
+	}()
+
+	return a.URL(), nil
+}
+
+func (a *App) Wait() error {
+	if a.errCh == nil {
+		return errors.New("server not started")
+	}
+
+	err, ok := <-a.errCh
+	if !ok {
+		return nil
+	}
+
+	return err
+}
+
+func (a *App) Shutdown(ctx context.Context) error {
+	if a.listener == nil {
+		return nil
+	}
+
+	return a.http.Shutdown(ctx)
+}
+
+func (a *App) URL() string {
+	if a.listener == nil {
+		return ""
+	}
+
+	_, port, err := net.SplitHostPort(a.listener.Addr().String())
+	if err != nil {
+		return ""
+	}
+
+	host := a.config.Host
+	if host == "" || host == "0.0.0.0" || host == "::" {
+		host = "127.0.0.1"
+	}
+
+	return fmt.Sprintf("http://%s", net.JoinHostPort(host, port))
+}
+
+func healthz(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("ok\n"))
+}

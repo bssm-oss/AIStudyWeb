@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Verify formatting
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            printf 'The following files are not gofmt-formatted:\n%s\n' "$unformatted"
+            exit 1
+          fi
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build rewardlab binary
+        run: |
+          mkdir -p ./.tmp
+          go build -o ./.tmp/rewardlab ./cmd/rewardlab
+
+      - name: Smoke test built binary
+        run: |
+          mkdir -p ./.tmp
+          ./.tmp/rewardlab serve --host=127.0.0.1 --port=18080 --open=false > ./.tmp/rewardlab.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true; wait "$server_pid" 2>/dev/null || true' EXIT
+          python3 - <<'PY'
+          import sys
+          import time
+          import urllib.request
+
+          health_url = 'http://127.0.0.1:18080/healthz'
+          root_url = 'http://127.0.0.1:18080/'
+
+          for _ in range(40):
+              try:
+                  health = urllib.request.urlopen(health_url, timeout=1).read().decode().strip()
+                  root = urllib.request.urlopen(root_url, timeout=1).read().decode()
+              except Exception:
+                  time.sleep(0.25)
+                  continue
+
+              if health != 'ok':
+                  raise SystemExit(f'unexpected health response: {health!r}')
+
+              if 'Epsilon-greedy multi-armed bandits' not in root:
+                  raise SystemExit('lesson title not found in root response')
+
+              break
+          else:
+              raise SystemExit('server did not become ready in time')
+          PY
