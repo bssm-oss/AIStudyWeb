@@ -5,45 +5,72 @@ const defaultControls = {
   seed: 7,
 };
 
-const controlsForm = document.querySelector("#controls");
-const resetButton = document.querySelector("#reset-controls");
-const summaryRoot = document.querySelector("#summary");
-const chartRoot = document.querySelector("#chart");
-const insightsRoot = document.querySelector("#insights");
-const historyRoot = document.querySelector("#history");
+function initApp(doc = globalThis.document) {
+  if (!doc) {
+    return false;
+  }
 
-controlsForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  runSimulation(readControls());
-});
+  const controlsForm = doc.querySelector("#controls");
+  const resetButton = doc.querySelector("#reset-controls");
+  const summaryRoot = doc.querySelector("#summary");
+  const chartRoot = doc.querySelector("#chart");
+  const insightsRoot = doc.querySelector("#insights");
+  const historyRoot = doc.querySelector("#history");
 
-resetButton.addEventListener("click", () => {
-  writeControls(defaultControls);
-  runSimulation(defaultControls);
-});
+  if (!controlsForm || !resetButton || !summaryRoot || !chartRoot || !insightsRoot || !historyRoot) {
+    return false;
+  }
 
-writeControls(defaultControls);
-runSimulation(defaultControls);
+  const roots = {
+    controlsForm,
+    summaryRoot,
+    chartRoot,
+    insightsRoot,
+    historyRoot,
+  };
 
-function writeControls(values) {
+  controlsForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    runSimulation(readControls(controlsForm), roots);
+  });
+
+  resetButton.addEventListener("click", () => {
+    writeControls(controlsForm, defaultControls);
+    runSimulation(defaultControls, roots);
+  });
+
+  writeControls(controlsForm, defaultControls);
+  runSimulation(defaultControls, roots);
+  return true;
+}
+
+function writeControls(controlsForm, values) {
   controlsForm.elements.arms.value = String(values.arms);
   controlsForm.elements.epsilon.value = values.epsilon.toFixed(2);
   controlsForm.elements.steps.value = String(values.steps);
   controlsForm.elements.seed.value = String(values.seed);
 }
 
-function readControls() {
+function readControls(controlsForm) {
   const arms = clampInteger(Number(controlsForm.elements.arms.value), 2, 12, defaultControls.arms);
   const epsilon = clampNumber(Number(controlsForm.elements.epsilon.value), 0, 1, defaultControls.epsilon);
   const steps = clampInteger(Number(controlsForm.elements.steps.value), 10, 5000, defaultControls.steps);
   const seed = clampInteger(Number(controlsForm.elements.seed.value), 1, 999999, defaultControls.seed);
 
   const normalized = { arms, epsilon, steps, seed };
-  writeControls(normalized);
+  writeControls(controlsForm, normalized);
   return normalized;
 }
 
-function runSimulation(config) {
+function runSimulation(config, roots) {
+  const result = simulateBandit(config);
+  if (roots) {
+    render(result, roots);
+  }
+  return result;
+}
+
+function simulateBandit(config) {
   const rng = createMulberry32(config.seed);
   const arms = Array.from({ length: config.arms }, (_, index) => ({
     index,
@@ -90,7 +117,7 @@ function runSimulation(config) {
     });
   }
 
-  render({
+  return {
     config,
     arms,
     optimalArmIndex,
@@ -99,10 +126,11 @@ function runSimulation(config) {
     exploreCount,
     exploitCount,
     totalReward,
-  });
+  };
 }
 
-function render(result) {
+function render(result, roots) {
+  const { summaryRoot, chartRoot, insightsRoot, historyRoot } = roots;
   const optimalSelections = result.history.filter((entry) => entry.optimal).length;
   const averageReward = result.totalReward / result.config.steps;
   const optimalSelectionRate = (optimalSelections / result.config.steps) * 100;
@@ -286,3 +314,33 @@ function argMax(items, selector) {
 function formatSigned(value) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
 }
+
+const rewardLabApp = {
+  defaultControls,
+  initApp,
+  writeControls,
+  readControls,
+  runSimulation,
+  simulateBandit,
+  render,
+  metricCard,
+  renderArms,
+  renderInsights,
+  renderHistory,
+  clampInteger,
+  clampNumber,
+  createMulberry32,
+  randomNormal,
+  argMax,
+  formatSigned,
+};
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = rewardLabApp;
+}
+
+if (typeof window !== "undefined") {
+  window.rewardLabApp = rewardLabApp;
+}
+
+initApp();
