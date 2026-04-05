@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RewardLab · Epsilon-Greedy Bandits</title>
+    <meta
+      name="description"
+      content="A minimal teaching app for understanding epsilon-greedy exploration in multi-armed bandits."
+    >
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="shell">
+      <header class="hero panel">
+        <div class="hero-copy">
+          <p class="eyebrow">RewardLab lesson 01</p>
+          <h1>Epsilon-greedy multi-armed bandits, made concrete.</h1>
+          <p class="lede">
+            Pull virtual slot-machine arms, let the algorithm balance exploration and exploitation,
+            and watch how its estimates move toward the hidden reward landscape.
+          </p>
+        </div>
+        <dl class="hero-notes">
+          <div>
+            <dt>Lesson scope</dt>
+            <dd>One strategy: epsilon-greedy.</dd>
+          </div>
+          <div>
+            <dt>Main idea</dt>
+            <dd>Explore a little, exploit the best estimate the rest of the time.</dd>
+          </div>
+          <div>
+            <dt>Visualization</dt>
+            <dd>True means, learned values, selection counts, and recent rewards.</dd>
+          </div>
+        </dl>
+      </header>
+
+      <main class="layout">
+        <section class="panel controls-panel" aria-labelledby="controls-title">
+          <div class="section-heading">
+            <p class="eyebrow">Experiment controls</p>
+            <h2 id="controls-title">Choose a bandit setup</h2>
+          </div>
+
+          <form id="controls" class="controls-grid">
+            <label class="control-field">
+              <span>Arms</span>
+              <input id="arms" name="arms" type="number" min="2" max="12" step="1" value="5">
+            </label>
+
+            <label class="control-field">
+              <span>Epsilon</span>
+              <input id="epsilon" name="epsilon" type="number" min="0" max="1" step="0.01" value="0.10">
+            </label>
+
+            <label class="control-field">
+              <span>Steps</span>
+              <input id="steps" name="steps" type="number" min="10" max="5000" step="10" value="250">
+            </label>
+
+            <label class="control-field">
+              <span>Seed</span>
+              <input id="seed" name="seed" type="number" min="1" max="999999" step="1" value="7">
+            </label>
+
+            <div class="actions">
+              <button type="submit" class="button button-primary">Run simulation</button>
+              <button type="button" class="button button-secondary" id="reset-controls">Reset defaults</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel summary-panel" aria-labelledby="summary-title">
+          <div class="section-heading">
+            <p class="eyebrow">What happened</p>
+            <h2 id="summary-title">Simulation summary</h2>
+          </div>
+          <div id="summary" class="summary-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="panel chart-panel" aria-labelledby="chart-title">
+          <div class="section-heading">
+            <p class="eyebrow">Arm-by-arm view</p>
+            <h2 id="chart-title">Hidden truth vs learned estimate</h2>
+          </div>
+          <div id="chart" class="chart" aria-live="polite"></div>
+        </section>
+
+        <section class="panel insights-panel" aria-labelledby="insights-title">
+          <div class="section-heading">
+            <p class="eyebrow">Interpretation</p>
+            <h2 id="insights-title">How to read the result</h2>
+          </div>
+          <div id="insights" class="insight-list"></div>
+        </section>
+
+        <section class="panel history-panel" aria-labelledby="history-title">
+          <div class="section-heading">
+            <p class="eyebrow">Recent pulls</p>
+            <h2 id="history-title">Latest decisions</h2>
+          </div>
+          <div id="history" class="history-table"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
