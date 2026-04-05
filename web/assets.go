@@ -1,0 +1,55 @@
+package web
+
+import (
+	"bytes"
+	"embed"
+	"io/fs"
+	"net/http"
+	"time"
+)
+
+//go:embed index.html styles.css app.js
+var embeddedAssets embed.FS
+
+var indexHTML = mustReadFile("index.html")
+
+func RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("/", serveIndex)
+	mux.Handle("/assets/", http.StripPrefix("/assets/", cacheStatic(http.FileServer(http.FS(assetFS())))))
+}
+
+func serveIndex(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	http.ServeContent(w, r, "index.html", time.Time{}, bytes.NewReader(indexHTML))
+}
+
+func assetFS() fs.FS {
+	return embeddedAssets
+}
+
+func mustReadFile(name string) []byte {
+	content, err := embeddedAssets.ReadFile(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return content
+}
+
+func cacheStatic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=3600")
+		next.ServeHTTP(w, r)
+	})
+}
