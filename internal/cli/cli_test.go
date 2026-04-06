@@ -44,8 +44,49 @@ func TestRunServeSkipsBrowserWhenOpenFalse(t *testing.T) {
 		t.Fatalf("server config = %+v, want host 127.0.0.1 and port 8090", gotConfig)
 	}
 
+	if gotConfig.ExperimentalOllama {
+		t.Fatalf("experimental ollama = true, want false")
+	}
+
 	if !strings.Contains(stdout.String(), "RewardLab listening on http://127.0.0.1:8090") {
 		t.Fatalf("stdout = %q, want startup message", stdout.String())
+	}
+}
+
+func TestRunServePassesExperimentalOllamaConfig(t *testing.T) {
+	t.Parallel()
+
+	var gotConfig server.Config
+	err := Run(context.Background(), []string{
+		"serve",
+		"--open=false",
+		"--experimental-ollama",
+		"--ollama-model=qwen2.5:3b",
+		"--ollama-url=http://127.0.0.1:22434",
+	}, Dependencies{
+		Stdout: &bytes.Buffer{},
+		Stderr: &bytes.Buffer{},
+		Opener: &recordingOpener{},
+		NewServer: func(cfg server.Config) (Server, error) {
+			gotConfig = cfg
+			return &stubServer{url: "http://127.0.0.1:8080"}, nil
+		},
+	})
+
+	if err != nil {
+		t.Fatalf("Run() error = %v", err)
+	}
+
+	if !gotConfig.ExperimentalOllama {
+		t.Fatal("experimental ollama = false, want true")
+	}
+
+	if gotConfig.OllamaModel != "qwen2.5:3b" {
+		t.Fatalf("ollama model = %q, want qwen2.5:3b", gotConfig.OllamaModel)
+	}
+
+	if gotConfig.OllamaURL != "http://127.0.0.1:22434" {
+		t.Fatalf("ollama url = %q, want http://127.0.0.1:22434", gotConfig.OllamaURL)
 	}
 }
 
