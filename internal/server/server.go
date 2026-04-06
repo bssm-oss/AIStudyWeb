@@ -16,8 +16,11 @@ const shutdownTimeout = 5 * time.Second
 
 // Config defines how the local RewardLab HTTP server binds on startup.
 type Config struct {
-	Host string
-	Port int
+	Host               string
+	Port               int
+	ExperimentalOllama bool
+	OllamaModel        string
+	OllamaURL          string
 }
 
 // App manages the lifecycle of the local RewardLab HTTP server.
@@ -38,21 +41,41 @@ func New(cfg Config) (*App, error) {
 		return nil, fmt.Errorf("port must be between 0 and 65535: %d", cfg.Port)
 	}
 
+	if cfg.ExperimentalOllama {
+		if cfg.OllamaModel == "" {
+			return nil, errors.New("ollama model is required when experimental ollama mode is enabled")
+		}
+
+		if cfg.OllamaURL == "" {
+			cfg.OllamaURL = DefaultOllamaURL
+		}
+
+		if err := validateOllamaURL(cfg.OllamaURL); err != nil {
+			return nil, err
+		}
+	}
+
 	return &App{
 		config: cfg,
 		http: &http.Server{
 			Addr:              net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port)),
-			Handler:           NewHandler(),
+			Handler:           NewHandler(cfg),
 			ReadHeaderTimeout: shutdownTimeout,
 		},
 	}, nil
 }
 
 // NewHandler returns the root HTTP handler for the current RewardLab routes.
-func NewHandler() http.Handler {
+func NewHandler(cfg Config) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", healthz)
-	webui.RegisterRoutes(mux)
+	if cfg.ExperimentalOllama {
+		mux.Handle("/experimental/ollama/guide", newOllamaGuideHandler(cfg))
+	}
+	webui.RegisterRoutes(mux, webui.RuntimeConfig{
+		ExperimentalOllamaEnabled: cfg.ExperimentalOllama,
+		OllamaModel:               cfg.OllamaModel,
+	})
 	return mux
 }
 
