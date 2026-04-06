@@ -3,8 +3,10 @@ package web
 import (
 	"bytes"
 	"embed"
+	"encoding/json"
 	"io/fs"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -13,27 +15,36 @@ var embeddedAssets embed.FS
 
 var indexHTML = mustReadFile("index.html")
 
+type RuntimeConfig struct {
+	ExperimentalOllamaEnabled bool   `json:"experimentalOllamaEnabled"`
+	OllamaModel               string `json:"ollamaModel,omitempty"`
+}
+
 // RegisterRoutes wires the current RewardLab lesson page and static assets into the provided ServeMux.
-func RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/", serveIndex)
+func RegisterRoutes(mux *http.ServeMux, config RuntimeConfig) {
+	mux.HandleFunc("/", serveIndex(config))
 	mux.HandleFunc("/favicon.ico", serveFavicon)
 	mux.Handle("/assets/", http.StripPrefix("/assets/", cacheStatic(http.FileServer(http.FS(assetFS())))))
 }
 
-func serveIndex(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
+func serveIndex(config RuntimeConfig) http.HandlerFunc {
+	page := withRuntimeConfig(indexHTML, config)
 
-	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		w.Header().Set("Allow", "GET, HEAD")
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	http.ServeContent(w, r, "index.html", time.Time{}, bytes.NewReader(indexHTML))
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		http.ServeContent(w, r, "index.html", time.Time{}, bytes.NewReader(page))
+	}
 }
 
 func assetFS() fs.FS {
@@ -47,6 +58,17 @@ func mustReadFile(name string) []byte {
 	}
 
 	return content
+}
+
+func withRuntimeConfig(page []byte, config RuntimeConfig) []byte {
+	payload, err := json.Marshal(config)
+	if err != nil {
+		panic(err)
+	}
+
+	safePayload := strings.ReplaceAll(string(payload), "</", "<\\/")
+	script := `<script>window.rewardLabConfig = ` + safePayload + `;</script>`
+	return []byte(strings.Replace(string(page), "</body>", script+"</body>", 1))
 }
 
 func cacheStatic(next http.Handler) http.Handler {
