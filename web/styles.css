@@ -179,6 +179,10 @@ input {
   gap: var(--space-2);
 }
 
+.control-field-wide {
+  grid-column: 1 / -1;
+}
+
 .control-field span {
   color: var(--color-text-soft);
   font-size: var(--text-sm);
@@ -197,6 +201,62 @@ input {
 .button:focus {
   outline: var(--border-thin) solid var(--color-accent);
   outline-offset: var(--space-1);
+}
+
+.experimental-panel {
+  padding: var(--space-4);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: hsl(220 23% 17% / 0.75);
+}
+
+.experimental-toggle {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.experimental-toggle input {
+  width: auto;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.experimental-copy {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.experimental-copy strong {
+  color: var(--color-text);
+  font-size: var(--text-md);
+}
+
+.control-help {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: var(--text-sm);
+}
+
+.experimental-status {
+  color: var(--color-info);
+}
+
+.experimental-status[data-state="disabled"] {
+  color: var(--color-text-soft);
+}
+
+.experimental-status[data-state="error"] {
+  color: var(--color-danger);
+}
+
+.experimental-status[data-state="running"] {
+  color: var(--color-accent);
+}
+
+.experimental-status[data-state="ready"],
+.experimental-status[data-state="success"] {
+  color: var(--color-success);
 }
 
 .actions {
@@ -218,6 +278,12 @@ input {
 
 .button:hover {
   transform: translateY(calc(var(--space-1) * -1));
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
 }
 
 .button-primary {

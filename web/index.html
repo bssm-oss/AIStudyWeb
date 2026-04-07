@@ -65,6 +65,19 @@
               <input id="seed" name="seed" type="number" min="1" max="999999" step="1" value="7">
             </label>
 
+            <div class="control-field control-field-wide experimental-panel">
+              <label class="experimental-toggle" for="experimental-ollama-opt-in">
+                <input id="experimental-ollama-opt-in" name="experimentalOllamaOptIn" type="checkbox">
+                <span class="experimental-copy">
+                  <strong>Experimental: Ollama-guided arm selection</strong>
+                  <span class="control-help">
+                    Epsilon-greedy stays the default. Opt in only when this local server enables the experimental guide.
+                  </span>
+                </span>
+              </label>
+              <p id="experimental-status" class="control-help experimental-status" aria-live="polite"></p>
+            </div>
+
             <div class="actions">
               <button type="submit" class="button button-primary">Run simulation</button>
               <button type="button" class="button button-secondary" id="reset-controls">Reset defaults</button>

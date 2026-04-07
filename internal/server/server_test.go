@@ -13,7 +13,7 @@ import (
 func TestNewHandlerServesRootAssetsAndHealthz(t *testing.T) {
 	t.Parallel()
 
-	handler := NewHandler()
+	handler := NewHandler(Config{})
 
 	requests := []struct {
 		name        string
@@ -43,6 +43,41 @@ func TestNewHandlerServesRootAssetsAndHealthz(t *testing.T) {
 				t.Fatalf("body = %q, want substring %q", res.Body.String(), tt.wantContain)
 			}
 		})
+	}
+}
+
+func TestNewHandlerLeavesExperimentalGuideDisabledByDefault(t *testing.T) {
+	t.Parallel()
+
+	handler := NewHandler(Config{})
+	req := httptest.NewRequest(http.MethodPost, "/experimental/ollama/guide", strings.NewReader(`{}`))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusNotFound {
+		t.Fatalf("status code = %d, want %d", res.Code, http.StatusNotFound)
+	}
+}
+
+func TestNewHandlerInjectsExperimentalRuntimeConfig(t *testing.T) {
+	t.Parallel()
+
+	handler := NewHandler(Config{ExperimentalOllama: true, OllamaModel: "qwen2.5:3b", OllamaURL: DefaultOllamaURL})
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusOK {
+		t.Fatalf("status code = %d, want %d", res.Code, http.StatusOK)
+	}
+
+	body := res.Body.String()
+	if !strings.Contains(body, `"experimentalOllamaEnabled":true`) {
+		t.Fatalf("body missing experimental config: %q", body)
+	}
+
+	if !strings.Contains(body, `"ollamaModel":"qwen2.5:3b"`) {
+		t.Fatalf("body missing ollama model config: %q", body)
 	}
 }
 
